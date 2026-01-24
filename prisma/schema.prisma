@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // url removed for Prisma v7 config
+}
+
+model MemoryCard {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+
+  transcript  String
+  title       String
+  category    String[]
+  actionItems String[]
+  mood        String
+  rawLlmJson  Json
+
+  @@map("memory_cards")
+}
