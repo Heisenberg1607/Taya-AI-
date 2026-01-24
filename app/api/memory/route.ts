@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { transcribeWithWhisper } from "@/backend/services/transcribe";
-import { structureMemory } from "@/backend/services/structure";
+import { LLMService } from "@/backend/services/LLMService";
 import {
   saveMemoryCard,
   listMemoryCards,
@@ -53,7 +52,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const transcript = await transcribeWithWhisper(audio);
+    const llmService = LLMService.getInstance();
+    
+    const transcript = await llmService.transcribeAudio(audio);
     if (!transcript) {
       return NextResponse.json(
         { error: "Empty transcription. Try again." },
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const memory = await structureMemory(transcript);
+    const memory = await llmService.structureMemory(transcript);
     const created = await saveMemoryCard(transcript, memory);
 
     return NextResponse.json(formatMemoryResponse(created));
