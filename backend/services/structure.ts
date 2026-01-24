@@ -15,7 +15,7 @@ const openai = new OpenAI({ apiKey });
 
 export async function structureMemory(transcript: string): Promise<MemoryJson> {
   const r = await openai.responses.create({
-    model: "gpt-4o-mini",
+    model: "gpt-4.1-nano-2025-04-14",
     input: buildMemoryPrompt(transcript),
     text: { format: memorySchema },
   });

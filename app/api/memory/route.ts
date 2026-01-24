@@ -61,17 +61,33 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET() {
-  const items = await listMemoryCards(20);
-  return NextResponse.json({
-    items: items.map((x) => ({
-      id: x.id,
-      created_at: x.createdAt,
-      transcript: x.transcript,
-      title: x.title,
-      category: x.category,
-      action_items: x.actionItems,
-      mood: x.mood,
-    })),
-  });
+export async function GET(req: Request) {
+  try {
+    // optional: /api/memory?limit=50
+    const { searchParams } = new URL(req.url);
+    const limitParam = searchParams.get("limit");
+    const limit = Math.min(Math.max(Number(limitParam ?? 20), 1), 100);
+
+    const items = await listMemoryCards(limit);
+
+    return NextResponse.json({
+      items: items.map((x) => ({
+        id: x.id,
+        created_at: x.createdAt.toISOString(), // ✅ important
+        transcript: x.transcript,
+        title: x.title,
+        category: x.category,
+        action_items: x.actionItems,
+        mood: x.mood,
+      })),
+    });
+  } catch (err: unknown) {
+    console.error("GET /api/memory failed:", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+
+    return NextResponse.json(
+      { error: "Failed to fetch memories", detail: message },
+      { status: 500 }
+    );
+  }
 }
