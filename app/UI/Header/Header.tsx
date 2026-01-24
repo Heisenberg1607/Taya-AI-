@@ -1,8 +1,8 @@
-import { User } from "lucide-react";
+import Link from "next/link";
+import { User, BookOpen } from "lucide-react";
 
 interface HeaderProps {
   isDarkMode: boolean;
-  
 }
 
 export function Header({ isDarkMode }: HeaderProps) {
@@ -16,7 +16,7 @@ export function Header({ isDarkMode }: HeaderProps) {
     >
       <div className="max-w-[1440px] mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center ${
                 isDarkMode ? "bg-indigo-500/20" : "bg-indigo-100"
@@ -31,7 +31,7 @@ export function Header({ isDarkMode }: HeaderProps) {
             >
               Living Memory
             </h1>
-          </div>
+          </Link>
 
           <p
             className={`hidden md:block text-sm ${
@@ -42,7 +42,18 @@ export function Header({ isDarkMode }: HeaderProps) {
           </p>
 
           <div className="flex items-center gap-3">
-            
+            <Link
+              href="/Memory"
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                isDarkMode
+                  ? "bg-slate-800 text-slate-200 hover:bg-slate-700"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              <BookOpen className="w-4 h-4" />
+              <span className="hidden sm:inline">My Memories</span>
+            </Link>
+
             <div
               className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-300 ${
                 isDarkMode

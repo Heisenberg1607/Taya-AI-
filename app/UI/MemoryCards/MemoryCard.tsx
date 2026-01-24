@@ -68,7 +68,7 @@ function MemoryCardComponent({
   const isEditable = Boolean(onUpdate || onDelete);
 
   return (
-    <Card className="rounded-3xl border bg-white p-6 shadow-sm">
+    <Card className="h-full rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/50">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-sm text-slate-500">

@@ -87,7 +87,7 @@ export function useRecorder(): UseRecorderReturn {
 
         setResult(json as MemoryResult);
         setState("idle");
-        setStatus("Done ✅");
+        // setStatus("Done ✅");
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         setState("idle");

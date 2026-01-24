@@ -2,8 +2,9 @@
 
 import { memo } from "react";
 import { motion } from "framer-motion";
-import { Mic, Loader2, Square } from "lucide-react";
+import { Mic, Loader2, Square, Type } from "lucide-react";
 import type { RecordState } from "@/types/types";
+import { Card } from "@/components/ui/card";
 
 const PULSE_DURATION_SECONDS = 1.5;
 const PULSE_DELAY_SECONDS = 0.3;
@@ -16,14 +17,14 @@ interface RecordButtonProps {
   state: RecordState;
   onStart: () => void;
   onStop: () => void;
-  isDarkMode?: boolean;
+  onSwitchToText?: () => void;
 }
 
 function RecordButtonComponent({
   state,
   onStart,
   onStop,
-  isDarkMode = false,
+  onSwitchToText,
 }: RecordButtonProps) {
   const handleClick = () => {
     if (state === "idle") {
@@ -35,81 +36,92 @@ function RecordButtonComponent({
 
   const label =
     state === "idle"
-      ? "Start recording"
+      ? "Hold to speak"
       : state === "recording"
-      ? "Stop recording"
+      ? "Release to stop"
       : "Creating your memory...";
 
-  const baseStyles =
-    "relative h-32 w-32 rounded-full flex items-center justify-center transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed";
-
-  const buttonStyles =
-    state === "recording"
-      ? `${baseStyles} ${
-          isDarkMode
-            ? "bg-gradient-to-br from-indigo-500 to-purple-500 shadow-2xl shadow-indigo-500/50"
-            : "bg-gradient-to-br from-indigo-400 to-purple-400 shadow-2xl shadow-indigo-400/50"
-        }`
-      : `${baseStyles} ${
-          isDarkMode
-            ? "bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg"
-            : "bg-gradient-to-br from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 shadow-lg"
-        }`;
-
-  const pulseColor = isDarkMode ? "bg-indigo-500" : "bg-indigo-400";
-
   return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="relative">
-        {state === "recording" && (
-          <>
-            <motion.div
-              className={`absolute inset-0 rounded-full ${pulseColor}`}
-              initial={{ scale: 1, opacity: 0.5 }}
-              animate={{ scale: PULSE_SCALE_OUTER, opacity: 0 }}
-              transition={{
-                duration: PULSE_DURATION_SECONDS,
-                repeat: Infinity,
-                ease: "easeOut",
-              }}
-            />
-            <motion.div
-              className={`absolute inset-0 rounded-full ${pulseColor}`}
-              initial={{ scale: 1, opacity: 0.5 }}
-              animate={{ scale: PULSE_SCALE_INNER, opacity: 0 }}
-              transition={{
-                duration: PULSE_DURATION_SECONDS,
-                repeat: Infinity,
-                ease: "easeOut",
-                delay: PULSE_DELAY_SECONDS,
-              }}
-            />
-          </>
+    <Card className="h-full w-full rounded-3xl border border-slate-200 bg-white p-8 shadow-lg shadow-slate-200/50 flex flex-col">
+      <h2 className="text-2xl font-semibold text-slate-900 mb-8">
+        Create a Memory
+      </h2>
+
+      <div className="flex-1 flex flex-col items-center justify-center gap-6">
+        <div className="relative">
+          {state === "recording" && (
+            <>
+              <motion.div
+                className="absolute inset-0 rounded-full bg-violet-400"
+                initial={{ scale: 1, opacity: 0.4 }}
+                animate={{ scale: PULSE_SCALE_OUTER, opacity: 0 }}
+                transition={{
+                  duration: PULSE_DURATION_SECONDS,
+                  repeat: Infinity,
+                  ease: "easeOut",
+                }}
+              />
+              <motion.div
+                className="absolute inset-0 rounded-full bg-violet-400"
+                initial={{ scale: 1, opacity: 0.4 }}
+                animate={{ scale: PULSE_SCALE_INNER, opacity: 0 }}
+                transition={{
+                  duration: PULSE_DURATION_SECONDS,
+                  repeat: Infinity,
+                  ease: "easeOut",
+                  delay: PULSE_DELAY_SECONDS,
+                }}
+              />
+            </>
+          )}
+
+          <motion.button
+            onClick={handleClick}
+            disabled={state === "processing"}
+            className={`
+              relative h-36 w-36 rounded-full flex items-center justify-center
+              bg-gradient-to-br from-violet-500 to-purple-600
+              shadow-xl shadow-violet-500/30
+              border-4 border-white/20
+              transition-all duration-300
+              disabled:opacity-50 disabled:cursor-not-allowed
+              ${state === "recording" ? "shadow-2xl shadow-violet-500/50" : ""}
+            `}
+            whileHover={{ scale: state === "processing" ? 1 : HOVER_SCALE }}
+            whileTap={{ scale: state === "processing" ? 1 : TAP_SCALE }}
+          >
+            {state === "idle" && (
+              <Mic className="h-14 w-14 text-white" strokeWidth={1.5} />
+            )}
+            {state === "recording" && (
+              <Square className="h-12 w-12 text-white" strokeWidth={1.5} />
+            )}
+            {state === "processing" && (
+              <Loader2 className="h-14 w-14 text-white animate-spin" strokeWidth={1.5} />
+            )}
+          </motion.button>
+        </div>
+
+        <p className="text-base font-medium text-slate-700">{label}</p>
+
+        {onSwitchToText && state === "idle" && (
+          <button
+            onClick={onSwitchToText}
+            className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors mt-2"
+          >
+            <Type className="h-4 w-4" />
+            Switch to text
+          </button>
         )}
 
-        <motion.button
-          onClick={handleClick}
-          disabled={state === "processing"}
-          className={buttonStyles}
-          whileHover={{ scale: state === "processing" ? 1 : HOVER_SCALE }}
-          whileTap={{ scale: state === "processing" ? 1 : TAP_SCALE }}
-        >
-          {state === "idle" && <Mic className="h-12 w-12 text-white" />}
-          {state === "recording" && <Square className="h-12 w-12 text-white" />}
-          {state === "processing" && (
-            <Loader2 className="h-12 w-12 text-white animate-spin" />
-          )}
-        </motion.button>
+        {!onSwitchToText && state === "idle" && (
+          <div className="flex items-center gap-2 text-sm text-slate-400 mt-2">
+            <Type className="h-4 w-4" />
+            Switch to text
+          </div>
+        )}
       </div>
-
-      <p
-        className={`text-sm font-medium ${
-          isDarkMode ? "text-slate-300" : "text-slate-600"
-        }`}
-      >
-        {label}
-      </p>
-    </div>
+    </Card>
   );
 }
 
