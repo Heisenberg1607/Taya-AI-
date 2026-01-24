@@ -1,4 +1,4 @@
-import { User, Moon, Sun } from "lucide-react";
+import { User } from "lucide-react";
 
 interface HeaderProps {
   isDarkMode: boolean;

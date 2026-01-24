@@ -1,9 +1,7 @@
-// app/UI/MemoryCards/AddToCalendarDialog.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -23,27 +21,54 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { createActionItemEvent, addToCalendar } from "@/lib/calendar";
+import { createActionItemEvent, addToCalendar } from "@/lib/CalendarUtils";
+import { DateUtils } from "@/lib/DateUtils";
 import { useToast } from "@/hooks/use-toast";
+
+const CALENDAR_DIALOG_CONSTANTS = {
+  DEFAULT_HOUR: "9",
+  DEFAULT_MINUTE: "0",
+  HOURS_COUNT: 24,
+  MINUTE_INTERVALS: [0, 15, 30, 45],
+  DISPLAY_DATE_FORMAT: "EEEE, MMMM d, yyyy",
+} as const;
 
 interface AddToCalendarDialogProps {
   actionItem: string;
   memoryTitle: string;
 }
 
-export function AddToCalendarDialog({
+function AddToCalendarDialogComponent({
   actionItem,
   memoryTitle,
 }: AddToCalendarDialogProps) {
   const [open, setOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date()
+    DateUtils.today()
   );
-  const [selectedHour, setSelectedHour] = useState<string>("9");
-  const [selectedMinute, setSelectedMinute] = useState<string>("0");
+  const [selectedHour, setSelectedHour] = useState<string>(
+    CALENDAR_DIALOG_CONSTANTS.DEFAULT_HOUR
+  );
+  const [selectedMinute, setSelectedMinute] = useState<string>(
+    CALENDAR_DIALOG_CONSTANTS.DEFAULT_MINUTE
+  );
   const { toast } = useToast();
 
-  const handleAddToCalendar = () => {
+  const hours = useMemo(
+    () => Array.from({ length: CALENDAR_DIALOG_CONSTANTS.HOURS_COUNT }, (_, i) => i),
+    []
+  );
+
+  const minutes = useMemo(
+    () => CALENDAR_DIALOG_CONSTANTS.MINUTE_INTERVALS,
+    []
+  );
+
+  const isDateDisabled = useCallback((date: Date) => {
+    return DateUtils.isPastDate(date);
+  }, []);
+
+  const handleAddToCalendar = useCallback(() => {
     if (!selectedDate) {
       toast({
         title: "Please select a date",
@@ -67,12 +92,16 @@ export function AddToCalendarDialog({
     });
 
     setOpen(false);
-  };
+  }, [selectedDate, selectedHour, selectedMinute, actionItem, memoryTitle, toast]);
 
-  // Generate hour options (0-23)
-  const hours = Array.from({ length: 24 }, (_, i) => i);
-  // Generate minute options (0, 15, 30, 45)
-  const minutes = [0, 15, 30, 45];
+  const formattedDate = useMemo(() => {
+    if (!selectedDate) return null;
+    return DateUtils.format(selectedDate, CALENDAR_DIALOG_CONSTANTS.DISPLAY_DATE_FORMAT);
+  }, [selectedDate]);
+
+  const formattedTime = useMemo(() => {
+    return DateUtils.formatTime(parseInt(selectedHour), parseInt(selectedMinute));
+  }, [selectedHour, selectedMinute]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -93,13 +122,11 @@ export function AddToCalendarDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {/* Action item preview */}
           <div className="rounded-lg bg-slate-50 p-3">
             <p className="text-sm font-medium text-slate-900">Action Item:</p>
             <p className="mt-1 text-sm text-slate-700">{actionItem}</p>
           </div>
 
-          {/* Date picker */}
           <div className="space-y-2">
             <Label>Select Date</Label>
             <div className="flex justify-center rounded-md border">
@@ -107,14 +134,13 @@ export function AddToCalendarDialog({
                 mode="single"
                 selected={selectedDate}
                 onSelect={setSelectedDate}
-                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                disabled={isDateDisabled}
                 initialFocus
                 className="rounded-md"
               />
             </div>
           </div>
 
-          {/* Time picker */}
           <div className="space-y-2">
             <Label>Select Time</Label>
             <div className="flex gap-2">
@@ -146,13 +172,11 @@ export function AddToCalendarDialog({
             </div>
           </div>
 
-          {/* Preview */}
           {selectedDate && (
             <div className="rounded-lg bg-blue-50 p-3">
               <p className="text-sm font-medium text-blue-900">Scheduled for:</p>
               <p className="mt-1 text-sm text-blue-700">
-                {format(selectedDate, "EEEE, MMMM d, yyyy")} at{" "}
-                {selectedHour.padStart(2, "0")}:{selectedMinute.padStart(2, "0")}
+                {formattedDate} at {formattedTime}
               </p>
             </div>
           )}
@@ -171,3 +195,5 @@ export function AddToCalendarDialog({
     </Dialog>
   );
 }
+
+export const AddToCalendarDialog = memo(AddToCalendarDialogComponent);
