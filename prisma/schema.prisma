@@ -5,6 +5,9 @@ generator client {
 datasource db {
   provider = "postgresql"
   // url removed for Prisma v7 config
+  // For Supabase: Connection pooling is handled via .env configuration
+  // Use port 6543 with ?pgbouncer=true for pooled connections (serverless)
+  // Use port 5432 for direct connections (migrations)
 }
 
 model MemoryCard {
