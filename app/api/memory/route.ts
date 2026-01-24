@@ -1,9 +1,38 @@
 import { NextResponse } from "next/server";
 import { transcribeWithWhisper } from "@/backend/services/transcribe";
 import { structureMemory } from "@/backend/services/structure";
-import { saveMemoryCard, listMemoryCards } from "@/backend/repo/memoryRepo";
+import {
+  saveMemoryCard,
+  listMemoryCards,
+  validateLimit,
+} from "@/backend/repo/memoryRepo";
+import type { MemoryResult } from "@/types/types";
+
+const MIN_AUDIO_SIZE_BYTES = 2000;
 
 export const runtime = "nodejs";
+
+function formatMemoryResponse(item: {
+  id: string;
+  createdAt: Date;
+  transcript: string;
+  title: string;
+  category: string[];
+  actionItems: string[];
+  completedActionItems?: number[];
+  mood: string;
+}): MemoryResult {
+  return {
+    id: item.id,
+    created_at: item.createdAt.toISOString(),
+    transcript: item.transcript,
+    title: item.title,
+    category: item.category,
+    action_items: item.actionItems,
+    completed_action_items: item.completedActionItems ?? [],
+    mood: item.mood,
+  };
+}
 
 export async function POST(req: Request) {
   try {
@@ -17,14 +46,13 @@ export async function POST(req: Request) {
       );
     }
 
-    if (audio.size < 2000) {
+    if (audio.size < MIN_AUDIO_SIZE_BYTES) {
       return NextResponse.json(
         { error: "Audio looks empty/silent. Try again." },
         { status: 400 }
       );
     }
 
-    // 1) voice -> text
     const transcript = await transcribeWithWhisper(audio);
     if (!transcript) {
       return NextResponse.json(
@@ -33,27 +61,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2) text -> memory JSON
     const memory = await structureMemory(transcript);
-
-    // 3) save to DB
     const created = await saveMemoryCard(transcript, memory);
 
-    return NextResponse.json({
-      id: created.id,
-      created_at: created.createdAt,
-      transcript: created.transcript,
-      title: created.title,
-      category: created.category,
-      action_items: created.actionItems,
-      mood: created.mood,
-    });
+    return NextResponse.json(formatMemoryResponse(created));
   } catch (err: unknown) {
     console.error("POST /api/memory failed:", err);
-
-    let message = "Unknown error";
-    if (err instanceof Error) message = err.message;
-
+    const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json(
       { error: "Server error", detail: message },
       { status: 500 }
@@ -63,28 +77,18 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   try {
-    // optional: /api/memory?limit=50
     const { searchParams } = new URL(req.url);
     const limitParam = searchParams.get("limit");
-    const limit = Math.min(Math.max(Number(limitParam ?? 20), 1), 100);
+    const limit = validateLimit(limitParam ? Number(limitParam) : undefined);
 
     const items = await listMemoryCards(limit);
 
     return NextResponse.json({
-      items: items.map((x) => ({
-        id: x.id,
-        created_at: x.createdAt.toISOString(), // ✅ important
-        transcript: x.transcript,
-        title: x.title,
-        category: x.category,
-        action_items: x.actionItems,
-        mood: x.mood,
-      })),
+      items: items.map(formatMemoryResponse),
     });
   } catch (err: unknown) {
     console.error("GET /api/memory failed:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
-
     return NextResponse.json(
       { error: "Failed to fetch memories", detail: message },
       { status: 500 }
