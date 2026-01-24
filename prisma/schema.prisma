@@ -15,6 +15,7 @@ model MemoryCard {
   title       String
   category    String[]
   actionItems String[]
+  completedActionItems Int[] @default([]) // Indices of completed action items
   mood        String
   rawLlmJson  Json
 
