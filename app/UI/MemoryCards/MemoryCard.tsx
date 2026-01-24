@@ -5,6 +5,7 @@ import { MemoryResult } from "@/types/types";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { CheckSquare, Sparkles } from "lucide-react";
+import { AddToCalendarDialog } from "./AddToCalendarDialog";
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -65,7 +66,11 @@ export function MemoryCard({ data }: { data: MemoryResult }) {
                 className="flex items-start gap-3 rounded-2xl border bg-white p-3"
               >
                 <div className="mt-0.5 h-5 w-5 rounded-md border" />
-                <div className="text-sm text-slate-700">{item}</div>
+                <div className="flex-1 text-sm text-slate-700">{item}</div>
+                <AddToCalendarDialog
+                  actionItem={item}
+                  memoryTitle={data.title}
+                />
               </li>
             ))}
           </ul>
