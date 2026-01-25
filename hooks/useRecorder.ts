@@ -44,6 +44,8 @@ function getFileExtension(mimeType?: string): string {
   return mimeType?.includes("mp4") ? "recording.mp4" : "recording.webm";
 }
 
+// useRecorder is being passed to the page.tsx. Which is the parent of the record button and then passed to the record button as a prop.
+
 export function useRecorder(): UseRecorderReturn {
   const [state, setState] = useState<RecordState>("idle");
   const [status, setStatus] = useState("");
@@ -52,6 +54,9 @@ export function useRecorder(): UseRecorderReturn {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+
+
+  //process the recording and pass it to the backend using memory API
 
   const processRecording = useCallback(
     async (blob: Blob, mimeType?: string) => {
@@ -96,6 +101,8 @@ export function useRecorder(): UseRecorderReturn {
     },
     []
   );
+
+  // the audio is getting recorded here
 
   const start = useCallback(async () => {
     if (state !== "idle") return;

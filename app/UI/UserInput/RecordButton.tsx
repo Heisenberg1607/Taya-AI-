@@ -20,6 +20,11 @@ interface RecordButtonProps {
   onSwitchToText?: () => void;
 }
 
+//record button is passed to pages.tsx. And receiving props from pages.tsx. 
+// And then passed to the record button as a prop.
+
+//the only thing the record button operates on is the state of the recording. 
+
 function RecordButtonComponent({
   state,
   onStart,
