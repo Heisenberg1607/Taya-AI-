@@ -79,7 +79,7 @@ function RecordButtonComponent({
               />
             </>
           )}
-
+{/* Styling and changing the state and icons of the record button from here */}
           <motion.button
             onClick={handleClick}
             disabled={state === "processing"}

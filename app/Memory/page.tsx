@@ -132,7 +132,7 @@ function PaginationControls({
 
 export default function MemoriesPage() {
   const {
-    currentMemory,
+    currentMemories,
     totalCount,
     currentPage,
     totalPages,
@@ -231,17 +231,31 @@ export default function MemoriesPage() {
         </div>
       )}
 
-      {!loading && !error && currentMemory && (
+      {!loading && !error && currentMemories && (
         <div className="space-y-6">
-          <MemoryCard
+          {/* <MemoryCard
             data={currentMemory}
             onUpdate={updateMemory}
             onDelete={deleteMemory}
             onToggleActionComplete={toggleActionItemComplete}
             onUpdateActionItem={updateActionItem}
             onDeleteActionItem={deleteActionItem}
-          />
-
+          /> */}
+          {/* all the memories are being fetched from here, currentMemories is coming from the useMemories hook */}
+          {
+            currentMemories.map((memory) => (
+              <MemoryCard
+                key={memory.id}
+                data={memory}
+                onUpdate={updateMemory}
+                onDelete={deleteMemory}
+                onToggleActionComplete={toggleActionItemComplete}
+                onUpdateActionItem={updateActionItem}
+                onDeleteActionItem={deleteActionItem}
+              />
+            ))
+          }
+          {/* pagination controls is rendered from here */}
           {totalPages > 1 && (
             <PaginationControls
               currentPage={currentPage}

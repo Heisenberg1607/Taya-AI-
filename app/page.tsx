@@ -15,7 +15,8 @@ export default function Home() {
       <div className="mx-auto max-w-5xl p-6 lg:h-screen lg:flex lg:items-center lg:justify-center">
         <div className="flex flex-col lg:flex-row items-stretch justify-center lg:align-center gap-6 ">
           <div className="w-full lg:w-[400px] flex flex-col">
-            <RecordButton state={state} onStart={start} onStop={stop} />
+            {/* there are three types of states - idle , recording, processing */}
+            <RecordButton state={state} onStart={start} onStop={stop} /> 
             {/* {!!status && (
               <div className="text-sm text-slate-600 text-center mt-4">
                 {status}

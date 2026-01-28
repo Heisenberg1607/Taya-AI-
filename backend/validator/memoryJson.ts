@@ -1,3 +1,5 @@
+// this file is used to validate the memory json object, in short whatever is returned from the LLM should be validated here, check the types, or if the LLM returns a non-json object, return null
+
 export type MemoryJson = {
   title: string;
   category: string[];

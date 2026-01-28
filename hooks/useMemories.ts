@@ -8,7 +8,7 @@ const ITEMS_PER_PAGE = 1;
 
 interface UseMemoriesReturn {
   memories: MemoryResult[];
-  currentMemory: MemoryResult | null;
+  currentMemories: MemoryResult[] | null;
   totalCount: number;
   currentPage: number;
   totalPages: number;
@@ -38,9 +38,10 @@ export function useMemories(): UseMemoriesReturn {
   const hasNextPage = currentPage < totalPages;
   const hasPrevPage = currentPage > 1;
 
-  const currentMemory = useMemo(() => {
-    const index = currentPage - 1;
-    return memories[index] ?? null;
+  const currentMemories = useMemo(() => {
+    const StartIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const EndIndex = StartIndex + ITEMS_PER_PAGE;
+    return memories.slice(StartIndex, EndIndex);
   }, [memories, currentPage]);
 
   const fetchMemories = useCallback(async () => {
@@ -171,7 +172,7 @@ export function useMemories(): UseMemoriesReturn {
 
   return {
     memories,
-    currentMemory,
+    currentMemories,
     totalCount,
     currentPage,
     totalPages,
